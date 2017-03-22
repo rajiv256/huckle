@@ -1,0 +1,17 @@
+[package] 
+name="ouros"
+version="0.1.0"
+authors=["rajiv"]
+
+[lib]
+crate-type=["staticlib"]
+
+[dependencies]
+rlibc = "*"
+
+[profile.dev]
+panic = "abort"
+
+# The release profile, used for `cargo build --release`.
+[profile.release]
+panic = "abort"
