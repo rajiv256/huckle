@@ -8,7 +8,9 @@ extern crate multiboot2;
 
 #[macro_use]
 mod vga_buffer ; 
+mod memory ; 
 
+use memory::FrameAllocator ; 
 
 #[no_mangle]
 pub extern fn rust_main(multiboot_information_address: usize) {
@@ -32,12 +34,26 @@ pub extern fn rust_main(multiboot_information_address: usize) {
     let multiboot_start = multiboot_information_address;
     let multiboot_end = multiboot_start + (boot_info.total_size as usize);
 
-    println!("kernel_start: {}, kernel_end: {}", kernel_start, kernel_end);
-    println!("multiboot_start: {}, multiboot_end: {}", multiboot_start, multiboot_end);
-       
+    println!("kernel_start: {:0x}, kernel_end: {:0x}", kernel_start, kernel_end);
+    println!("multiboot_start: {:0x}, multiboot_end: {:0x}", multiboot_start, multiboot_end);
+   
+    let mut frame_allocator = memory::area_frame_allocator::AreaFrameAllocator::new(
+    kernel_start as usize, kernel_end as usize, multiboot_start,
+    multiboot_end, memory_map_tag.memory_areas());
+
+    for i in 0.. {
+        if let None = frame_allocator.allocate_frame() {
+            println!("allocated {} frames", i);
+            break;
+        }
+    }
+    loop{} 
 }
 
+
+
 #[lang="eh_personality"] pub extern fn eh_personality(){} 
+
 #[lang = "panic_fmt"]
 #[no_mangle]
 pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str,
@@ -47,6 +63,7 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str,
     println!("    {}", fmt);
     loop{}
 }
+
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "C" fn _Unwind_Resume() -> ! {
