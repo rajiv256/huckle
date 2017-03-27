@@ -5,11 +5,13 @@
 extern crate rlibc ; 
 extern crate spin;
 extern crate multiboot2;
+#[macro_use] 
+extern crate bitflags ; 
 
 #[macro_use]
-mod vga_buffer ; 
-mod memory ; 
-
+pub mod vga_buffer ; 
+pub mod memory ; 
+pub mod paging ; 
 use memory::FrameAllocator ; 
 
 #[no_mangle]
@@ -34,6 +36,7 @@ pub extern fn rust_main(multiboot_information_address: usize) {
     let multiboot_start = multiboot_information_address;
     let multiboot_end = multiboot_start + (boot_info.total_size as usize);
 
+    ::paging::table::test() ; 
     println!("kernel_start: {:0x}, kernel_end: {:0x}", kernel_start, kernel_end);
     println!("multiboot_start: {:0x}, multiboot_end: {:0x}", multiboot_start, multiboot_end);
    
@@ -69,6 +72,10 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str,
 pub extern "C" fn _Unwind_Resume() -> ! {
     loop {}
 }
+
+
+
+
 
 /////////////////////////This is the basic Hello world that works//////////////////////////////////////////////
  // // ATTENTION: we have a very small stack and no guard page

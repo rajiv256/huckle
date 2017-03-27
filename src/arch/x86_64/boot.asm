@@ -10,6 +10,7 @@ start:
     call check_long_mode
 
     call set_up_page_tables ; new
+    
     call enable_paging     ; new    
     call set_up_SSE
     lgdt [gdt64.pointer]
@@ -92,6 +93,13 @@ check_long_mode:
 
 
 set_up_page_tables:
+    
+    ;recursive map the p4_table 
+    mov eax, p4_table
+    or eax, 0b11 ; present + writable
+    mov [p4_table + 511 * 8], eax
+
+
     ; map first P4 entry to P3 table
     mov eax, p3_table
     or eax, 0b11 ; present + writable
@@ -117,6 +125,7 @@ set_up_page_tables:
 
     ret
 ret
+
 
 enable_paging:
     ; load P4 to cr3 register (cpu uses this to access the P4 table)

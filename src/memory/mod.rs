@@ -6,10 +6,16 @@ pub struct Frame {
 }
 pub const PAGE_SIZE: usize = 4096;
 
+use ::paging::PhysicalAddress ; 
+
 impl Frame {
-    fn containing_address(address: usize) -> Frame {
+    pub fn containing_address(address: usize) -> Frame {
         Frame{ number: address / PAGE_SIZE }
     }
+    
+	pub fn start_address(&self) -> ::paging::PhysicalAddress{
+	    self.number * PAGE_SIZE
+	}
 }
 
 pub trait FrameAllocator {
