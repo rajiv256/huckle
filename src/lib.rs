@@ -5,14 +5,16 @@
 extern crate rlibc ; 
 extern crate spin;
 extern crate multiboot2;
+extern crate x86_64 ;
 #[macro_use] 
 extern crate bitflags ; 
 
 #[macro_use]
 pub mod vga_buffer ; 
 pub mod memory ; 
-pub mod paging ; 
+ 
 use memory::FrameAllocator ; 
+use memory::area_frame_allocator::AreaFrameAllocator ;
 
 #[no_mangle]
 pub extern fn rust_main(multiboot_information_address: usize) {
@@ -36,21 +38,24 @@ pub extern fn rust_main(multiboot_information_address: usize) {
     let multiboot_start = multiboot_information_address;
     let multiboot_end = multiboot_start + (boot_info.total_size as usize);
 
-    ::paging::table::test() ; 
-    println!("kernel_start: {:0x}, kernel_end: {:0x}", kernel_start, kernel_end);
-    println!("multiboot_start: {:0x}, multiboot_end: {:0x}", multiboot_start, multiboot_end);
+   
+   
+    // println!("kernel_start: {:0x}, kernel_end: {:0x}", kernel_start, kernel_end);
+    // println!("multiboot_start: {:0x}, multiboot_end: {:0x}", multiboot_start, multiboot_end);
    
     let mut frame_allocator = memory::area_frame_allocator::AreaFrameAllocator::new(
     kernel_start as usize, kernel_end as usize, multiboot_start,
     multiboot_end, memory_map_tag.memory_areas());
 
-    for i in 0.. {
-        if let None = frame_allocator.allocate_frame() {
-            println!("allocated {} frames", i);
-            break;
-        }
-    }
-    loop{} 
+    //memory::test_paging(&mut frame_allocator);
+
+    // for i in 0.. {
+    //     if let None = frame_allocator.allocate_frame() {
+    //         println!("allocated {} frames", i);
+    //         break;
+    //     }
+    // }
+    // loop{} 
 }
 
 

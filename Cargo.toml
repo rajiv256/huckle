@@ -11,6 +11,7 @@ rlibc = "*"
 spin = "0.4.5"
 multiboot2 = "0.1.0"
 bitflags = "0.7.0"
+x86_64 = "0.1.0"
 
 [profile.dev]
 panic = "abort"
