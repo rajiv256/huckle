@@ -9,6 +9,7 @@ extern crate x86_64 ;
 #[macro_use] 
 extern crate bitflags ; 
 
+extern crate x86 ; 
 #[macro_use]
 pub mod vga_buffer ; 
 pub mod memory ; 
@@ -17,18 +18,20 @@ use memory::FrameAllocator ;
 use memory::area_frame_allocator::AreaFrameAllocator ;
 
 #[no_mangle]
-pub extern fn rust_main(multiboot_information_address: usize) {
-	// use ::vga_buffer::print_something ; 
- //    print_something() ; 
+pub extern "C" fn rust_main(multiboot_information_address: usize) {
+    // ATTENTION: we have a very small stack and no guard page
 
+    // the same as before
     vga_buffer::clear_screen();
+    println!("Hello World{}", "!");
 
-    let boot_info = unsafe{ multiboot2::load(multiboot_information_address) };
+    let boot_info = unsafe {
+        multiboot2::load(multiboot_information_address)
+    };
     let memory_map_tag = boot_info.memory_map_tag()
-    .expect("Memory map tag required");
-
+        .expect("Memory map tag required");
     let elf_sections_tag = boot_info.elf_sections_tag()
-    .expect("Elf-sections tag required");
+        .expect("Elf sections tag required");
 
     let kernel_start = elf_sections_tag.sections().map(|s| s.addr)
         .min().unwrap();
@@ -38,24 +41,23 @@ pub extern fn rust_main(multiboot_information_address: usize) {
     let multiboot_start = multiboot_information_address;
     let multiboot_end = multiboot_start + (boot_info.total_size as usize);
 
-   
-   
-    // println!("kernel_start: {:0x}, kernel_end: {:0x}", kernel_start, kernel_end);
-    // println!("multiboot_start: {:0x}, multiboot_end: {:0x}", multiboot_start, multiboot_end);
-   
+    println!("kernel start: 0x{:x}, kernel end: 0x{:x}",
+        kernel_start, kernel_end);
+    println!("multiboot start: 0x{:x}, multiboot end: 0x{:x}",
+        multiboot_start, multiboot_end);
+
     let mut frame_allocator = memory::area_frame_allocator::AreaFrameAllocator::new(
-    kernel_start as usize, kernel_end as usize, multiboot_start,
-    multiboot_end, memory_map_tag.memory_areas());
+        kernel_start as usize, kernel_end as usize, multiboot_start,
+        multiboot_end, memory_map_tag.memory_areas());
 
-    memory::test_paging(&mut frame_allocator);
+    // this is the new part
+    enable_nxe_bit();
+    enable_write_protect_bit();
+    memory::remap_the_kernel(&mut frame_allocator, boot_info);
+    frame_allocator.allocate_frame(); 
+    println!("It did not crash!");
 
-    // for i in 0.. {
-    //     if let None = frame_allocator.allocate_frame() {
-    //         println!("allocated {} frames", i);
-    //         break;
-    //     }
-    // }
-    // loop{} 
+    loop {}
 }
 
 
@@ -78,6 +80,22 @@ pub extern "C" fn _Unwind_Resume() -> ! {
     loop {}
 }
 
+
+fn enable_nxe_bit() {
+    use x86_64::registers::msr::{IA32_EFER, rdmsr, wrmsr};
+
+    let nxe_bit = 1 << 11;
+    unsafe {
+        let efer = rdmsr(IA32_EFER);
+        wrmsr(IA32_EFER, efer | nxe_bit);
+    }
+}
+
+fn enable_write_protect_bit() {
+    use x86_64::registers::control_regs::{cr0, cr0_write, Cr0};
+
+    unsafe { cr0_write(cr0() | Cr0::WRITE_PROTECT) };
+}
 
 
 

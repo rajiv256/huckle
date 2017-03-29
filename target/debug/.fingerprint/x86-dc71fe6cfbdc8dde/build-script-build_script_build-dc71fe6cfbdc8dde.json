@@ -1,0 +1,1 @@
+{"rustc":3024468459863826585,"features":"[\"csv\", \"default\", \"performance-counter\", \"phf\", \"phf_codegen\", \"serde_json\"]","target":11273808396359014319,"profile":10510368508586928391,"deps":[["csv v0.14.7",12287325449857667616],["phf_codegen v0.7.21",3078162877643941888],["serde_json v0.6.1",11540727724234738816]],"local":{"Precalculated":"0.8.1"},"rustflags":[]}
