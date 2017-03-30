@@ -49,10 +49,10 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     memory::init(boot_info);
 
     // initialize our IDT
-    //interrupts::init();
+    interrupts::init();
 
     // invoke a breakpoint exception
-    //x86_64::instructions::interrupts::int3();
+    x86_64::instructions::interrupts::int3();
     
 
     println!("It did not crash!");
