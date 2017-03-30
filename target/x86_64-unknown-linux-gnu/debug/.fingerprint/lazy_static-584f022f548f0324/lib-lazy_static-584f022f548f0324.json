@@ -1,0 +1,1 @@
+{"rustc":3024468459863826585,"features":"[\"nightly\", \"spin\", \"spin_no_std\"]","target":9206656783894896431,"profile":10510368508586928391,"deps":[["spin v0.4.5",3882471994123797221]],"local":{"Precalculated":"0.2.5"},"rustflags":[]}

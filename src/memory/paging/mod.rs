@@ -20,7 +20,7 @@ const ENTRY_COUNT :usize  = 512 ;
 pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Page {
    number: usize,
 }
@@ -49,9 +49,33 @@ impl Page {
         	"invalid address: 0x{:x}", address);
     	Page { number: address / PAGE_SIZE }
 	}
+    pub fn range_inclusive(start: Page, end: Page) -> PageIter {
+        PageIter {
+            start: start,
+            end: end,
+        }
+    }
 
 }
 
+pub struct PageIter {
+    start: Page,
+    end: Page,
+}
+
+impl Iterator for PageIter {
+    type Item = Page;
+
+    fn next(&mut self) -> Option<Page> {
+        if self.start <= self.end {
+            let page = self.start;
+            self.start.number += 1;
+            Some(page)
+        } else {
+            None
+        }
+    }
+}
 
 
 pub struct ActivePageTable {
@@ -144,34 +168,11 @@ impl InactivePageTable {
     }
 }
 
-pub fn test_paging<A>(allocator: &mut A)
-    where A: FrameAllocator
-{
-	    let mut page_table = unsafe { ActivePageTable::new() };
 
-		let addr = 42 * 512 * 512 * 4096; // 42th P3 entry
-	let page = Page::containing_address(addr);
-	let frame = allocator.allocate_frame().expect("no more frames");
-	println!("None = {:?}, map to {:?}",
-	         page_table.translate(addr),
-	         frame);
-	page_table.map_to(page, frame, EntryFlags::empty(), allocator);
-	println!("Some = {:?}", page_table.translate(addr));
-	println!("next free frame: {:?}", allocator.allocate_frame());
-
-	page_table.unmap(Page::containing_address(addr), allocator);
-	println!("None = {:?}", page_table.translate(addr));  
-	
-	//Gives Page fault. Since we have unmapped the page above. 
-	println!("{:#x}", unsafe {
-    *(Page::containing_address(addr).start_address() as *const u64)
-	});
-
-}
 
 use multiboot2::BootInformation;
 
-pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
+pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> ActivePageTable
     where A: FrameAllocator
 {
     let mut temporary_page = TemporaryPage::new(Page { number: 0xcafebabe },
@@ -229,4 +230,32 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     );
     active_table.unmap(old_p4_page, allocator);
     println!("guard page at {:#x}", old_p4_page.start_address());
+    active_table 
 }
+
+
+///////Test Paging //////////////////////
+// pub fn test_paging<A>(allocator: &mut A)
+//     where A: FrameAllocator
+// {
+//         let mut page_table = unsafe { ActivePageTable::new() };
+
+//         let addr = 42 * 512 * 512 * 4096; // 42th P3 entry
+//     let page = Page::containing_address(addr);
+//     let frame = allocator.allocate_frame().expect("no more frames");
+//     println!("None = {:?}, map to {:?}",
+//              page_table.translate(addr),
+//              frame);
+//     page_table.map_to(page, frame, EntryFlags::empty(), allocator);
+//     println!("Some = {:?}", page_table.translate(addr));
+//     println!("next free frame: {:?}", allocator.allocate_frame());
+
+//     page_table.unmap(Page::containing_address(addr), allocator);
+//     println!("None = {:?}", page_table.translate(addr));  
+    
+//     //Gives Page fault. Since we have unmapped the page above. 
+//     println!("{:#x}", unsafe {
+//     *(Page::containing_address(addr).start_address() as *const u64)
+//     });
+
+// }

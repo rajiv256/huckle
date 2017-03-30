@@ -1,0 +1,15 @@
+[package]
+name = "hole_list_allocator"
+version = "0.1.0"
+authors = ["rajiv256 <rajivpensidpri@gmail.com>"]
+
+[dependencies]
+spin = "0.4.5"
+linked_list_allocator = "0.2.5"
+
+
+
+
+[dependencies.lazy_static]
+version = "0.2.1"
+features = ["spin_no_std"]
