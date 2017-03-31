@@ -26,7 +26,7 @@ pub struct Page {
 }
 
 impl Page {
-	fn start_address(&self) -> usize {
+	pub fn start_address(&self) -> usize {
     	self.number * PAGE_SIZE
 	}
 
@@ -57,7 +57,7 @@ impl Page {
     }
 
 }
-
+#[derive(Clone)]
 pub struct PageIter {
     start: Page,
     end: Page,
@@ -231,6 +231,16 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> Ac
     active_table.unmap(old_p4_page, allocator);
     println!("guard page at {:#x}", old_p4_page.start_address());
     active_table 
+}
+
+use core::ops::Add;
+
+impl Add<usize> for Page {
+    type Output = Page;
+
+    fn add(self, rhs: usize) -> Page {
+        Page { number: self.number + rhs }
+    }
 }
 
 

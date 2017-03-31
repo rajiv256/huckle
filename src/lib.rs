@@ -26,6 +26,9 @@ extern crate lazy_static;
 extern crate x86 ; 
 #[macro_use]
 pub mod vga_buffer ; 
+
+
+extern crate bit_field ; 
 pub mod memory ; 
 mod interrupts;
 
@@ -46,14 +49,19 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     enable_write_protect_bit();
 
     // set up guard page and map the heap pages
-    memory::init(boot_info);
+    let mut memory_controller = memory::init(boot_info);
 
     // initialize our IDT
-    interrupts::init();
+    interrupts::init(&mut memory_controller);
 
-    // invoke a breakpoint exception
-    x86_64::instructions::interrupts::int3();
     
+    // fn stack_overflow() {
+    //     stack_overflow(); // for each recursion, the return address is pushed
+    // }
+
+    // // trigger a stack overflow
+    // stack_overflow();
+
 
     println!("It did not crash!");
 
