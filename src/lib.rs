@@ -29,6 +29,12 @@ pub mod vga_buffer ;
 
 
 extern crate bit_field ; 
+
+extern crate cpu ; 
+extern crate coreio ; 
+
+
+
 pub mod memory ; 
 mod interrupts;
 

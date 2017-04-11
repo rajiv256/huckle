@@ -25,6 +25,11 @@ path = "libs/bump_allocator"
 [dependencies.hole_list_allocator]
 path = "libs/hole_list_allocator"
 
+[dependencies.cpu]
+path = "libs/libcpu"
+
+[dependencies.coreio]
+path = "libs/core-io"
 
 
 [dependencies.lazy_static]
