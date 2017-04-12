@@ -38,7 +38,10 @@ extern crate coreio ;
 pub mod memory ; 
 mod interrupts;
 
- 
+mod peripherals ; 
+mod io ; 
+
+
 use memory::FrameAllocator ; 
 use memory::area_frame_allocator::AreaFrameAllocator ;
 
