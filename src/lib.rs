@@ -45,6 +45,7 @@ mod driver ;
 mod panic ; 
 mod pci ;
 mod rtl8139 ;  
+mod terminal ; 
 
 use memory::FrameAllocator ; 
 use memory::area_frame_allocator::AreaFrameAllocator ;
