@@ -124,18 +124,25 @@ impl Pci {
 
   fn read_as<T>(&mut self, bus: u8, device: u8, start_address: u16) -> Box<T> {
     let v = self.read_bytes(bus, device, start_address, size_of::<T>() as u16);
+   
+    
     let slice = &v[..];
     let read = read_into(slice);
+    println!("We dont't talk anymore");
+    
     return read;
   }
 
   fn read_header(&mut self, bus: u8, device: u8) -> Option<PciHeader> {
     let (vendor, _): (u16, u16) = unsafe { transmute(self.read(bus, device, 0, 0).unwrap()) };
-    if vendor == 0xffff {
-      return None
-    }
-
+    
+    //println!("{:?}", vendor);
+    // if vendor == 0xffff {
+    //    println!("We don't talk anymore!");
+    //   return None
+    // }
     let shared: SharedHeader = *self.read_as(bus, device, 0);
+    
     let rest = match shared.header_type {
       0x00 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
       0x01 => HeaderType::Todo,
@@ -145,6 +152,7 @@ impl Pci {
         return None
       }
     };
+
     return Some(PciHeader { shared: shared, rest: rest });
   }
 
@@ -162,6 +170,7 @@ impl DriverManager for Pci {
         match self.read_header(bus as u8, device as u8) {
           None => no_device_count += 1,
           Some(header) => {
+
             device_count += 1;
             let shared = header.shared;
             println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);

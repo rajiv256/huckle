@@ -1,3 +1,5 @@
+use core::fmt::Display ; 
+
 #[derive(Eq, PartialEq, Ord, PartialOrd, Copy, Clone, Debug)]
 pub struct Port(u16);
 

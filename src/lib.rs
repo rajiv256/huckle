@@ -46,6 +46,10 @@ mod panic ;
 mod pci ;
 mod rtl8139 ;  
 mod terminal ; 
+pub mod net ;  
+
+use pci::* ; 
+use driver::DriverManager;
 
 use memory::FrameAllocator ; 
 use memory::area_frame_allocator::AreaFrameAllocator ;
@@ -68,16 +72,10 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     // initialize our IDT
     interrupts::init(&mut memory_controller);
 
-    
-    // fn stack_overflow() {
-    //     stack_overflow(); // for each recursion, the return address is pushed
-    // }
-
-    // // trigger a stack overflow
-    // stack_overflow();
-
-
+    let mut p: Pci =  Pci::new() ; 
+    p.get_drivers() ; 
     println!("It did not crash!");
+
 
     loop {}
 }

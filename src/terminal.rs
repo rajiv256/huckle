@@ -13,7 +13,7 @@ pub static GLOBAL: spin::Mutex<Terminal> = spin::Mutex::new(Terminal {
 // Hack, related to that above
 unsafe impl Send for Terminal {}
 
-struct Point(usize, usize);
+struct Point(pub usize, pub usize);
 
 pub struct Terminal {
   current: Point,
