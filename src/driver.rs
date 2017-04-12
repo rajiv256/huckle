@@ -26,7 +26,7 @@ pub trait NetworkDriver: Driver
 }
 
 pub fn adap_ref<T: NetworkDriver + ?Sized>(t: &mut T) -> &mut Adaptor<T> {
-  unsafe { core::mem::transmute(t) }
+  unsafe { ::core::mem::transmute(t) }
 }
 
 pub struct Adaptor<T: NetworkDriver + ?Sized>(T);

@@ -1,2 +1,2 @@
-mod mycpu ; 
-mod keyboard ; 
+pub mod mycpu ; 
+pub mod keyboard ; 

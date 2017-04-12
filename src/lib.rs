@@ -4,6 +4,7 @@
 #![feature(unique)]
 #![feature(alloc, collections)]
 #![feature(abi_x86_interrupt)]
+#![feature(box_syntax)]
 
 extern crate rlibc ; 
 extern crate spin;
@@ -38,9 +39,12 @@ extern crate coreio ;
 pub mod memory ; 
 mod interrupts;
 
-mod peripherals ; 
+pub mod peripherals ; 
 mod io ; 
-
+mod driver ; 
+mod panic ; 
+mod pci ;
+mod rtl8139 ;  
 
 use memory::FrameAllocator ; 
 use memory::area_frame_allocator::AreaFrameAllocator ;
