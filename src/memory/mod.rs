@@ -93,7 +93,7 @@ pub fn init(boot_info: &BootInformation) -> MemoryController{
         boot_info);
 
     use self::paging::Page;
-    use hole_list_allocator::{HEAP_START, HEAP_SIZE};
+    use bump_allocator::{HEAP_START, HEAP_SIZE};
 
     let heap_start_page = Page::containing_address(HEAP_START);
     let heap_end_page = Page::containing_address(HEAP_START + HEAP_SIZE-1);

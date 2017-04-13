@@ -125,7 +125,7 @@ impl Writer {
 
 pub fn clear_screen() {
     for _ in 0..BUFFER_HEIGHT {
-        println!("");
+        //println!("");
     }
 }
 

@@ -128,32 +128,31 @@ impl Pci {
     
     let slice = &v[..];
     let read = read_into(slice);
-    println!("We dont't talk anymore");
-    
     return read;
   }
 
   fn read_header(&mut self, bus: u8, device: u8) -> Option<PciHeader> {
     let (vendor, _): (u16, u16) = unsafe { transmute(self.read(bus, device, 0, 0).unwrap()) };
     
-    //println!("{:?}", vendor);
-    // if vendor == 0xffff {
-    //    println!("We don't talk anymore!");
-    //   return None
-    // }
+    ////println!("{:?}", vendor);
+    if vendor == 0xffff {
+       //println!("We don't talk anymore!");
+      return None
+    }
+
     let shared: SharedHeader = *self.read_as(bus, device, 0);
-    
+    //println!("{:?}", shared.header_type);
     let rest = match shared.header_type {
       0x00 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
-      0x01 => HeaderType::Todo,
-      0x02 => HeaderType::Todo,
+      0x01 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
+      0x02 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
       _ => {
-        println!("weird header");
+        //println!("weird header");
         return None
       }
     };
-
-    return Some(PciHeader { shared: shared, rest: rest });
+    
+    Some(PciHeader { shared: shared, rest: rest })
   }
 
 }
@@ -165,22 +164,24 @@ impl DriverManager for Pci {
     let mut device_count: usize = 0;
 
     let mut io_offset: u32 = 0;
-    for bus in 0..256usize {
-      for device in 0..32usize {
+    for bus in 0..65535usize {
+      for device in 0..65535usize {
+        //println!("{:?} -- {:?}",bus,device);
         match self.read_header(bus as u8, device as u8) {
           None => no_device_count += 1,
           Some(header) => {
-
+            
             device_count += 1;
             let shared = header.shared;
             println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
-            println!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
-            println!("    header type 0x{:x}", shared.header_type);
-            println!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command);
+            // print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
+            // print!("    header type 0x{:x}", shared.header_type);
+            // print!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command);
+            // //print!("------------------------------------------------------------------------");
             match header.rest {
               HeaderType::Basic(next) => {
                 for &addr in next.base_addresses.iter() {
-                  println!("        base_address: 0x{:x}", addr);
+                  //println!("        base_address: 0x{:x}", addr);
                 }
                 if (shared.vendor == 0x10ec) && (shared.device == 0x8139) {
                   io_offset = (next.base_addresses[0] >> 2) << 2;
@@ -205,7 +206,7 @@ impl DriverManager for Pci {
       ret.push(box Rtl8139::new(granter));
     }
 
-    ret
+   ret
   }
 
 }

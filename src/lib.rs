@@ -14,7 +14,7 @@ extern crate x86_64 ;
 extern crate bitflags ; 
 
 
-extern crate hole_list_allocator;
+extern crate bump_allocator;
 extern crate alloc;
 #[macro_use]
 extern crate collections;
@@ -58,7 +58,7 @@ use memory::area_frame_allocator::AreaFrameAllocator ;
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
     // ATTENTION: we have a very small stack and no guard page
     vga_buffer::clear_screen();
-    println!("Hello World{}", "!");
+    //println!("Hello World{}", "!");
 
     let boot_info = unsafe {
         multiboot2::load(multiboot_information_address)
@@ -74,7 +74,7 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     let mut p: Pci =  Pci::new() ; 
     p.get_drivers() ; 
-    println!("It did not crash!");
+    //println!("It did not crash!");
 
 
     loop {}
@@ -90,8 +90,8 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str,
     line: u32) -> !
 {
-    println!("\n\nPANIC in {} at line {}:", file, line);
-    println!("    {}", fmt);
+    //println!("\n\nPANIC in {} at line {}:", file, line);
+    //println!("    {}", fmt);
     loop{}
 }
 

@@ -55,7 +55,7 @@ impl Driver for Rtl8139 {
 impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
-    println!("sending {} bytes", buf.len());
+    //println!("sending {} bytes", buf.len());
 
     self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
 
