@@ -54,6 +54,8 @@ use driver::DriverManager;
 use memory::FrameAllocator ; 
 use memory::area_frame_allocator::AreaFrameAllocator ;
 
+use ::net::NetworkStack ;
+
 #[no_mangle]
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
     // ATTENTION: we have a very small stack and no guard page
@@ -74,9 +76,8 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     let mut p: Pci =  Pci::new() ; 
     p.get_drivers() ; 
-    //println!("It did not crash!");
-
-
+    //println!("{:?}", x.len());
+    println!("It didn't crash");
     loop {}
 }
 

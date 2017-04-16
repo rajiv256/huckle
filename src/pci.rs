@@ -6,6 +6,8 @@ use collections::Vec;
 use peripherals::mycpu::Port;
 use rtl8139::Rtl8139;
 use driver::{DriverManager, NetworkDriver};
+use ::net::NetworkStack ; 
+
 
 pub struct PciManifest {
   pub register_limit: usize,
@@ -105,7 +107,7 @@ impl Pci {
   pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> Result<u32, ()> {
     let address = Pci::build_address(bus, device, function, offset);
     self.address_port.out32(address);
-    //Port::io_wait();
+    Port::io_wait();
     let input = self.data_port.in32();
     Ok(input)
   }
@@ -124,8 +126,6 @@ impl Pci {
 
   fn read_as<T>(&mut self, bus: u8, device: u8, start_address: u16) -> Box<T> {
     let v = self.read_bytes(bus, device, start_address, size_of::<T>() as u16);
-   
-    
     let slice = &v[..];
     let read = read_into(slice);
     return read;
@@ -134,9 +134,8 @@ impl Pci {
   fn read_header(&mut self, bus: u8, device: u8) -> Option<PciHeader> {
     let (vendor, _): (u16, u16) = unsafe { transmute(self.read(bus, device, 0, 0).unwrap()) };
     
-    ////println!("{:?}", vendor);
+    
     if vendor == 0xffff {
-       //println!("We don't talk anymore!");
       return None
     }
 
@@ -144,8 +143,8 @@ impl Pci {
     //println!("{:?}", shared.header_type);
     let rest = match shared.header_type {
       0x00 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
-      0x01 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
-      0x02 => HeaderType::Basic(*self.read_as(bus, device, size_of::<SharedHeader>() as u16)),
+      0x01 => HeaderType::Todo,
+      0x02 => HeaderType::Todo,
       _ => {
         //println!("weird header");
         return None
@@ -164,31 +163,31 @@ impl DriverManager for Pci {
     let mut device_count: usize = 0;
 
     let mut io_offset: u32 = 0;
-    for bus in 0..65535usize {
-      for device in 0..65535usize {
-        //println!("{:?} -- {:?}",bus,device);
+    for bus in 0..255usize {
+      for device in 0..32usize {
+        
         match self.read_header(bus as u8, device as u8) {
           None => no_device_count += 1,
           Some(header) => {
             
             device_count += 1;
             let shared = header.shared;
-            println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
+            // println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
             // print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
             // print!("    header type 0x{:x}", shared.header_type);
             // print!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command);
-            // //print!("------------------------------------------------------------------------");
+            
             match header.rest {
               HeaderType::Basic(next) => {
-                for &addr in next.base_addresses.iter() {
-                  //println!("        base_address: 0x{:x}", addr);
-                }
-                if (shared.vendor == 0x10ec) && (shared.device == 0x8139) {
-                  io_offset = (next.base_addresses[0] >> 2) << 2;
-                  self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4));
-                  self.data_port.out16(shared.command | 0x4);
-                  println!("command after bus mastering is 0x{:x}",
-                         self.read_header(bus as u8, device as u8).unwrap().shared.command);
+                // for &addr in next.base_addresses.iter() {
+                //   println!("base_address: 0x{:x}", addr);
+                // }
+                if (shared.vendor == 0x8086) && (shared.device == 0x100e) {
+                  io_offset = (next.base_addresses[0] >> 2) << 2 ;
+                  self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4)) ;
+                  
+                  self.data_port.out16(shared.command | 0x4) ;
+                  
                 }
 
               }
@@ -198,14 +197,17 @@ impl DriverManager for Pci {
         }
       }
     }
-    println!("{} found pci devices ({} not found)", device_count, no_device_count);
+     
     let mut ret: Vec<Box<NetworkDriver>> = Vec::new();
     if io_offset != 0 {
       let manifest = Rtl8139::manifest();
       let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
-      ret.push(box Rtl8139::new(granter));
-    }
+      
+      let mut x = NetworkStack::new(box Rtl8139::new(granter)) ; 
+      x.test() ; 
 
+      
+    }
    ret
   }
 

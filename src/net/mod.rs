@@ -7,6 +7,8 @@ use driver::*;
 use coreio::{Write,EndOfFile};
 use io::Writer ; 
 
+
+
 pub struct NetworkStack {
   card: Box<NetworkDriver + 'static>
 }
@@ -20,20 +22,12 @@ impl NetworkStack {
   pub fn test(&mut self) -> Result<(), EndOfFile> {
     let address = self.card.address();
     
-    // for i in 0..10usize {
-    //   match write!(adap_ref(&mut*self.card),
-    //                "\nhello, etherworld! sending frame # {} !\n", i) {
-    //     Ok(()) => (),
-    //     e @ Err(_) => return e,
-    //   }
-    // }
-
     let source = address;
     let destination = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
 
     let raw = [b'u', b'd', b'p', b'!'];
-    let u_header = UdpHeader::new(10, 10, raw.len() as u16);
-    let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 15, 15);
+    let u_header = UdpHeader::new(10, 20, raw.len() as u16);
+    let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 15, 25);
     let header = EthernetHeader::new(source, destination, 0x0800);
 
     let to_send = &(header, i_header, u_header, raw);

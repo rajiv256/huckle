@@ -14,7 +14,7 @@ pub struct Rtl8139 {
 impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std libs to implement?
 
   pub fn manifest() -> PciManifest {
-    PciManifest { register_limit: 0x100, device_id: 0x8139, vendor_id: 0x10ec, bus_master: true }
+    PciManifest { register_limit: 0x100, device_id: 0x100e, vendor_id: 0x8086, bus_master: true }
   }
 
 
@@ -28,7 +28,7 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
       config_1: p(0x52),
       command_register: p(0x37),
       transmit_address: [p(0x20), p(0x24), p(0x28), p(0x2c)],
-      transmit_status: [p(0x10), p(0x14), p(0x18), p(0x1c)],
+      transmit_status:  [p(0x10), p(0x14), p(0x18), p(0x1c)],
       id: [p(0), p(1), p(2), p(3), p(4), p(5)],
       descriptor: 0
     }
@@ -55,14 +55,15 @@ impl Driver for Rtl8139 {
 impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
-    //println!("sending {} bytes", buf.len());
-
+    
+   
     self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
-
+    
     self.transmit_status[self.descriptor].out32(0xfff & (buf.len() as u32));
     
     while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 { } // TODO(ryan): this is fragile if error sending...
-    self.descriptor = (self.descriptor + 1) % 4;
+    
+    self.descriptor = (self.descriptor + 1) % 4 ;
     Ok(buf.len())
   }
   
@@ -71,6 +72,7 @@ impl NetworkDriver for Rtl8139
     for i in 0..6usize {
       ret[i] = self.id[i].in8();
     }
+    //println!("{:?}", ret);
     ret
   }
 }
