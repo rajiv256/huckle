@@ -15,6 +15,7 @@ static GDT: Once<gdt::Gdt> = Once::new();
 
 mod gdt ;
 
+use peripherals::mycpu::Port ; 
 
 lazy_static! {
     static ref IDT: Idt = {
@@ -24,6 +25,8 @@ lazy_static! {
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX as u16);
         }
         idt.breakpoint.set_handler_fn(breakpoint_handler);
+        idt.interrupts[1].set_handler_fn(keyboard_handler) ;
+        //idt.interrupts[33].set_handler_fn(nic_interrupt_handler) ;  
         idt
     };
 }
@@ -59,17 +62,28 @@ pub fn init(memory_controller: &mut MemoryController) {
         load_tss(tss_selector);
     }
 
+    
+
     IDT.load();
+    
+
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame)
 {
     //println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
-
+extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame)
+{
+    println!("A key is pressed!!!");
+}
+extern "x86-interrupt" fn nic_interrupt_handler(stack_frame: &mut ExceptionStackFrame)
+{
+    println!("A packet is received!!!");
+}
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: &mut ExceptionStackFrame, _error_code: u64)
 {
-    //println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
+    println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
     loop {}
 }

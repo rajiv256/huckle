@@ -32,6 +32,7 @@ impl NetworkStack {
 
     let to_send = &(header, i_header, u_header, raw);
 
+     
     adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
     Ok(())
   }

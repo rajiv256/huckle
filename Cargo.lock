@@ -7,6 +7,7 @@ dependencies = [
  "bump_allocator 0.1.0",
  "coreio 0.0.1",
  "cpu 0.0.1-pre",
+ "cpuio 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hole_list_allocator 0.1.0",
  "lazy_static 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "multiboot2 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -62,6 +63,11 @@ version = "0.0.1-pre"
 dependencies = [
  "bitflags 0.1.1 (git+https://github.com/Tobba/bitflags.git?rev=23f1927c4e4185397a130f0b9fc302a8892ede46)",
 ]
+
+[[package]]
+name = "cpuio"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "csv"
@@ -294,6 +300,7 @@ dependencies = [
 "checksum bitflags 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8dead7461c1127cf637931a1e50934eb6eee8bff2f74433ac7909e9afcee04a3"
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
 "checksum byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0fc10e8cc6b2580fda3f36eb6dc5316657f812a3df879a44a66fc9f0fdbc4855"
+"checksum cpuio 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "22b8e308ccfc5acf3b82f79c0eac444cf6114cb2ac67a230ca6c177210068daa"
 "checksum csv 0.14.7 (registry+https://github.com/rust-lang/crates.io-index)" = "266c1815d7ca63a5bd86284043faf91e8c95e943e55ce05dc0ae08e952de18bc"
 "checksum lazy_static 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "4732c563b9a21a406565c4747daa7b46742f082911ae4753f390dc9ec7ee1a97"
 "checksum libc 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)" = "88ee81885f9f04bff991e306fea7c1c60a5f0f9e409e99f6b40e3311a3363135"

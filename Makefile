@@ -20,7 +20,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso) -m 1024M
+	@qemu-system-x86_64 -net nic,model=rtl8139 -net dump,file=/tmp/vm0.pcap -net user,id=mynet0,net=192.168.76.0/24,dhcpstart=192.168.76.9 -show-cursor -enable-kvm -cdrom $(iso) -m 1024M
 
 iso: $(iso)
 

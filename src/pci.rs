@@ -106,6 +106,7 @@ impl Pci {
 
   pub fn read(&mut self, bus: u8, device: u8, function: u8, offset: u8) -> Result<u32, ()> {
     let address = Pci::build_address(bus, device, function, offset);
+    
     self.address_port.out32(address);
     Port::io_wait();
     let input = self.data_port.in32();
@@ -166,28 +167,25 @@ impl DriverManager for Pci {
     for bus in 0..255usize {
       for device in 0..32usize {
         
+        //println!("{:?}...{:?}", bus,device);
         match self.read_header(bus as u8, device as u8) {
           None => no_device_count += 1,
           Some(header) => {
             
             device_count += 1;
             let shared = header.shared;
-            // println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
-            // print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
-            // print!("    header type 0x{:x}", shared.header_type);
+            println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
+            print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
+            print!("    header type 0x{:x}", shared.header_type);
             // print!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command);
             
             match header.rest {
               HeaderType::Basic(next) => {
-                // for &addr in next.base_addresses.iter() {
-                //   println!("base_address: 0x{:x}", addr);
-                // }
-                if (shared.vendor == 0x8086) && (shared.device == 0x100e) {
-                  io_offset = (next.base_addresses[0] >> 2) << 2 ;
+                
+                if (shared.vendor == 0x10ec) && (shared.device == 0x8139 ) {
+                  
                   self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4)) ;
-                  
                   self.data_port.out16(shared.command | 0x4) ;
-                  
                 }
 
               }
@@ -204,6 +202,7 @@ impl DriverManager for Pci {
       let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
       
       let mut x = NetworkStack::new(box Rtl8139::new(granter)) ; 
+      println!("Testing now...");
       x.test() ; 
 
       

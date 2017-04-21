@@ -1,14 +1,10 @@
 use alloc::boxed::Box;
-
 use collections::Vec;
-
 use io::{Reader,Writer} ; 
 
 
 pub trait Driver {
-
   fn init(&mut self);
-
 }
 
 pub trait DriverManager {

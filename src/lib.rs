@@ -5,10 +5,12 @@
 #![feature(alloc, collections)]
 #![feature(abi_x86_interrupt)]
 #![feature(box_syntax)]
+#![feature(asm)]
 
 extern crate rlibc ; 
 extern crate spin;
 extern crate multiboot2;
+#[macro_use]
 extern crate x86_64 ;
 #[macro_use] 
 extern crate bitflags ; 
@@ -33,7 +35,7 @@ extern crate bit_field ;
 
 extern crate cpu ; 
 extern crate coreio ; 
-
+extern crate cpuio ; 
 
 
 pub mod memory ; 
@@ -55,6 +57,9 @@ use memory::FrameAllocator ;
 use memory::area_frame_allocator::AreaFrameAllocator ;
 
 use ::net::NetworkStack ;
+use spin::Mutex;
+use peripherals::mycpu::Port ; 
+
 
 #[no_mangle]
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
@@ -73,12 +78,14 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     // initialize our IDT
     interrupts::init(&mut memory_controller);
-
+    
+     
     let mut p: Pci =  Pci::new() ; 
     p.get_drivers() ; 
-    //println!("{:?}", x.len());
+    
     println!("It didn't crash");
     loop {}
+    
 }
 
 

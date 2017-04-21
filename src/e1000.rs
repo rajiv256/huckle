@@ -7,7 +7,8 @@
 
 use peripherals::mycpu::Port;
 use driver::{Driver, NetworkDriver};
-use pci::{PciManifest, PortGranter};
+//use pci::{PciManifest, PortGranter};
+use pci::* ; 
 
 /////////////////////MACROS BEGIN //////////////////////////////////////////////
 
@@ -235,9 +236,38 @@ impl e1000 {
 	}
 	
 	pub fn rxinit(self) {
-		let ptr : *mut u8 ; 
-		let descs :e1000_rx_desc[E1000_NUM_RX_DESC] ; 
-		ptr = &mut descs[0] as *mut u8 ; 
+		// TODO 
 	}
 
+	pub fn txinit(self) {
+		// TODO 
+	}
+	pub fn enable_interrupt(self) {
+		self.write_command(REG_IMASK,0x1F6DC) ; 
+		self.write_command(REG_IMASK,0xff & ~4) ; 
+		self.read_command(0xc0) ;
+	}
+
+	pub fn init(self) {
+		self.bar_type  = 1; 
+		//self.mem_base = ?? ; 
+		self.io_base = 0xfebc0000 ; 
+		self.eeprom_exists = false ; 
+	}
+	pub fn start(self) -> bool {
+		self.detect_eeprom() ; 
+		if self.read_mac_addr() == false {
+			return false ; 
+		}
+		println!("{:?}", self.mac) ;
+		
+		self.write_command(0x5200+i*4, 0) ; 
+		self.enable_interrupt() ; 
+		self.rxinit() ; 
+		self.txinit() ; 
+		println!("Ethernet card started!");
+		return true ; 
+
+
+	}
 }
