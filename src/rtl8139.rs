@@ -55,12 +55,12 @@ impl Driver for Rtl8139 {
 impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
+    self.init() ; 
     self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
-    println!("{:x}", self.transmit_status[self.descriptor].in32());
     self.transmit_status[self.descriptor].out32(0xfff & (buf.len() as u32));
     while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 { 
-      //println!("{:x}", self.transmit_status[self.descriptor].in32());
-    } // TODO(ryan): this is fragile if error sending...
+    
+    }
     
     self.descriptor = (self.descriptor + 1) % 4 ;
     Ok(buf.len())

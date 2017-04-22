@@ -174,18 +174,30 @@ impl DriverManager for Pci {
             
             device_count += 1;
             let shared = header.shared;
-            println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
-            print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
-            print!("    header type 0x{:x}", shared.header_type);
+            // println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
+            // print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
+            // print!("    header type 0x{:x}", shared.header_type);
             // print!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command);
             
             match header.rest {
               HeaderType::Basic(next) => {
                 
                 if (shared.vendor == 0x10ec) && (shared.device == 0x8139 ) {
-                  
+                  io_offset = (next.base_addresses[0] >> 2) << 2 ;
                   self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4)) ;
                   self.data_port.out16(shared.command | 0x4) ;
+                  if io_offset != 0 { 
+
+
+                    let manifest = Rtl8139::manifest();
+                    let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
+                    
+                    let mut x = NetworkStack::new(box Rtl8139::new(granter)) ; 
+                    println!("Testing now...");
+                    x.test() ; 
+                    
+                    
+                  }
                 }
 
               }
@@ -197,16 +209,19 @@ impl DriverManager for Pci {
     }
      
     let mut ret: Vec<Box<NetworkDriver>> = Vec::new();
-    if io_offset != 0 {
-      let manifest = Rtl8139::manifest();
-      let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
+    // println!("io_offset: {:?}", io_offset);
+    // if io_offset != 0 { 
+
+
+    //   let manifest = Rtl8139::manifest();
+    //   let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
       
-      let mut x = NetworkStack::new(box Rtl8139::new(granter)) ; 
-      println!("Testing now...");
-      x.test() ; 
+    //   let mut x = NetworkStack::new(box Rtl8139::new(granter)) ; 
+    //   println!("Testing now...");
+    //   x.test() ; 
 
       
-    }
+    // }
    ret
   }
 
