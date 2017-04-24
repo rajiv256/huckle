@@ -18,6 +18,8 @@ pub trait NetworkDriver: Driver
   fn address(&mut self) -> [u8; 6];
 
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize,u32> ;
+
+  fn interrupt_handler(&mut self) ; 
   
 }
 

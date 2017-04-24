@@ -81,6 +81,7 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     
      
     let mut p: Pci =  Pci::new() ; 
+    // println!("Getting drivers -- lib.rs");
     p.get_drivers() ; 
     
     println!("It didn't crash");
