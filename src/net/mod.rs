@@ -21,21 +21,23 @@ impl NetworkStack {
 
   pub fn test(&mut self) -> Result<(), EndOfFile> {
     
-    let address = self.card.address();
+    self.card.listen()  ; 
+    // let address = self.card.address();
     
-    let source = address;
-    let destination = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
+    // let source = address;
+    // let destination = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
 
-    let raw = [b'u', b'd', b'p', b'!'];
-    let u_header = UdpHeader::new(10, 10, raw.len() as u16);
-    let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 40151232, 15);
+    // let raw = [b'u', b'd', b'p', b'!'];
+    // let u_header = UdpHeader::new(10, 10, raw.len() as u16);
+    // //192.168.100.2 & 192.168.100.1 ==>  40151232,23374016
+    // let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 40151232,23374016);
     
-    let header = EthernetHeader::new(source, destination, 0x0800);
+    // let header = EthernetHeader::new(source, destination, 0x0800);
 
-    let to_send = &(header, i_header, u_header, raw);
+    // let to_send = &(header, i_header, u_header, raw);
 
       
-    adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
+    // adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
     Ok(())
   }
 

@@ -5,6 +5,7 @@ use io::{Reader,Writer} ;
 
 pub trait Driver {
   fn init(&mut self);
+  fn listen(&mut self); 
 }
 
 pub trait DriverManager {

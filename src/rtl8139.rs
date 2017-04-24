@@ -104,9 +104,13 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
       isr: p(ISR)
 
     }; 
-    card.init() ; 
+    card.init() ;
+    //card.listen(); 
     card 
   }
+
+  
+  
 
 }
 
@@ -136,7 +140,12 @@ impl Driver for Rtl8139 {
     //Enable all possible interrupts by setting the interrupt mask. 
     self.imr.out32(INT_MASK) ; 
   }
-
+  fn listen(&mut self) {
+    while (self.command_register.in16() & RxBufEmpty != RxBufEmpty){
+      Port::io_wait() ; 
+    }
+    println!("Something happened!!");
+  }
   
 
 }
@@ -144,8 +153,7 @@ impl Driver for Rtl8139 {
 impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
-    //println!("reached here");
-    //self.init() ; 
+    println!("{:?}", buf.len());
     self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
     self.transmit_status[self.descriptor].out32(0xfff & (buf.len() as u32));
     while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 { 

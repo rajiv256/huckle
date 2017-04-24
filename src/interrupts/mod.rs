@@ -26,7 +26,7 @@ lazy_static! {
         }
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.interrupts[1].set_handler_fn(keyboard_handler) ;
-        //idt.interrupts[33].set_handler_fn(nic_interrupt_handler) ;  
+        idt.interrupts[11].set_handler_fn(nic_interrupt_handler) ;  
         idt
     };
 }

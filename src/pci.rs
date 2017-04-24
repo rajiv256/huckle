@@ -193,10 +193,9 @@ impl DriverManager for Pci {
                     let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
                     
                     let mut x = NetworkStack::new(box Rtl8139::new(granter)) ; 
-                    //x.init() ; 
-                    //println!("Testing now...");
-                    //x.test() ; 
-                    
+                    println!("Listening...");
+                    //x.listen() ;
+                    x.test() ; 
                     
                   }
                 }
