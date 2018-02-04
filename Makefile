@@ -20,7 +20,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -net nic,model=rtl8139 -net dump,file=/tmp/vm0.pcap -net socket,listen=:8010 -cdrom $(iso) -m 1024M
+	@qemu-system-x86_64 -net nic,model=rtl8139 -net dump,file=/tmp/vm0.pcap -net socket,listen=:8010 -cdrom $(iso) -m 1024M  
 
 iso: $(iso)
 
@@ -34,11 +34,11 @@ $(iso): $(kernel) $(grub_cfg)
 
 
 $(kernel): cargo $(rust_os) $(assembly_object_files) $(linker_script)
-	@ld -T $(linker_script) -o $(kernel) $(assembly_object_files) $(rust_os)
+	@ld -n --gc-sections -T $(linker_script) -o $(kernel) $(assembly_object_files) $(rust_os)
 
 
 cargo:
-	@$HOME/.cargo/bin/cargo build --target $(target)
+	@/home/rajiv/.cargo/bin/cargo build --target $(target)
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
