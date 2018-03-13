@@ -5,7 +5,7 @@ authors = ["rajiv256 <rajivpensidpri@gmail.com>"]
 
 [dependencies]
 spin = "0.4.5"
-linked_list_allocator = "0.2.5"
+linked_list_allocator = "=0.2.5"
 
 
 

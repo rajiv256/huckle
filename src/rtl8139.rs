@@ -141,7 +141,7 @@ impl Driver for Rtl8139 {
     self.imr.out32(INT_MASK) ; 
   }
   fn listen(&mut self) {
-    while (self.command_register.in16() & RxBufEmpty != RxBufEmpty){
+    while ((self.command_register.in16() & RxBufEmpty) != RxBufEmpty){
       Port::io_wait() ; 
     }
     println!("Something happened!!");
