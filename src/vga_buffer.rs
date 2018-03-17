@@ -1,4 +1,4 @@
-use core::fmt::Debug ; 
+use core::fmt::Debug ;
 use core::fmt;
 use spin::Mutex;
 
@@ -58,8 +58,8 @@ struct ScreenChar {
 }
 
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 32;
+const BUFFER_HEIGHT: usize = 30;
+const BUFFER_WIDTH: usize = 30;
 
 #[derive(Debug, Clone, Copy)]
 struct Buffer {
@@ -79,7 +79,7 @@ impl Writer {
             b'\n' => self.new_line(),
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
-                    self.new_line();    
+                    self.new_line();
                 }
 
                 let row = BUFFER_HEIGHT - 1;
@@ -157,6 +157,6 @@ pub fn print_something() {
     // writer.write_str("1+2={}",1+2);
     // write!(writer, "Hello World!");
     loop {
-        
+
     }
 }
