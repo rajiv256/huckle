@@ -7,13 +7,13 @@
 #![feature(box_syntax)]
 #![feature(asm)]
 
-extern crate rlibc ; 
+extern crate rlibc ;
 extern crate spin;
 extern crate multiboot2;
 #[macro_use]
 extern crate x86_64 ;
-#[macro_use] 
-extern crate bitflags ; 
+#[macro_use]
+extern crate bitflags ;
 
 
 extern crate bump_allocator;
@@ -26,40 +26,42 @@ extern crate once;
 #[macro_use]
 extern crate lazy_static;
 
-extern crate x86 ; 
+extern crate x86 ;
 #[macro_use]
-pub mod vga_buffer ; 
+pub mod vga_buffer ;
 
 
-extern crate bit_field ; 
+extern crate bit_field ;
 
-extern crate cpu ; 
-extern crate coreio ; 
-extern crate cpuio ; 
+extern crate cpu ;
+extern crate coreio ;
+extern crate cpuio ;
+use cpuio::Port ;
 
 
-pub mod memory ; 
+pub mod memory ;
 mod interrupts;
 
-pub mod peripherals ; 
-mod io ; 
-mod driver ; 
-mod panic ; 
+pub mod peripherals ;
+mod io ;
+mod driver ;
+mod panic ;
 mod pci ;
-mod rtl8139 ;  
-mod terminal ; 
-pub mod net ;  
+mod rtl8139 ;
+mod terminal ;
+pub mod net ;
 
-use pci::* ; 
+use pci::* ;
 use driver::DriverManager;
 
-use memory::FrameAllocator ; 
+use memory::FrameAllocator ;
 use memory::area_frame_allocator::AreaFrameAllocator ;
 
 use ::net::NetworkStack ;
 use spin::Mutex;
-use peripherals::mycpu::Port ; 
 
+pub mod pic8259 ;
+use pic8259::* ;
 
 #[no_mangle]
 pub extern "C" fn rust_main(multiboot_information_address: usize) {
@@ -78,23 +80,25 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
     // initialize our IDT
     interrupts::init(&mut memory_controller);
+
+    let mut chainedPics : ChainedPics = unsafe { ChainedPics::new(0x20,0x28) } ;
+    unsafe { chainedPics.remap() } ;
     
-     
-    let mut p: Pci =  Pci::new() ; 
+    let mut pci: Pci =  Pci::new() ;
     // println!("Getting drivers -- lib.rs");
-    p.get_drivers() ; 
-    
+     pci.get_drivers() ;
+
     println!("It didn't crash");
     // We probably have to call other processes here.
-    
+
     loop {}
-    
+
 }
 
 
 
 
-#[lang="eh_personality"] pub extern fn eh_personality(){} 
+#[lang="eh_personality"] pub extern fn eh_personality(){}
 
 #[lang = "panic_fmt"]
 #[no_mangle]
@@ -148,6 +152,6 @@ fn enable_write_protect_bit() {
  //    let buffer_ptr = (0xb8000 + 1988) as *mut _;
  //    unsafe { *buffer_ptr = hello_colored };
 
- //    loop{} 
+ //    loop{}
 
  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

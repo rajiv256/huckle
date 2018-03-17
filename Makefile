@@ -11,7 +11,7 @@ grub_cfg := src/arch/$(arch)/grub.cfg
 assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
 assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
 	build/arch/$(arch)/%.o, $(assembly_source_files))
-				
+
 .PHONY: all clean run iso
 
 all: $(kernel)
@@ -38,7 +38,7 @@ $(kernel): cargo $(rust_os) $(assembly_object_files) $(linker_script)
 
 
 cargo:
-	@/home/rajiv/.cargo/bin/cargo build --target $(target)
+	@/home/rajiv/.cargo/bin/cargo build --target $(target) --verbose
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)

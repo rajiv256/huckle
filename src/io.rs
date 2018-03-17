@@ -16,11 +16,11 @@ pub trait Reader {
 }
 
 pub trait Writer {
-  
-  type Err ; 
+
+  type Err ;
 
   fn write(&mut self, buf: &[u8]) -> Result<usize,Self::Err> ;
- 
+
   //fn write_all(&mut self, buf: &[u8]) -> NonatomicResult<(), usize, Err> { ... };
 
 
