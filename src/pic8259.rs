@@ -30,6 +30,7 @@ impl Pic {
 
     // Notify us that the interrupt is handled
     unsafe fn PIC_sendEOI(&mut self){
+        // println!("Inside the PIC");
         self.command_port.out8(CMD_END_OF_INTERRUPT) ;
         Port::io_wait() ;
     }
@@ -104,27 +105,15 @@ impl ChainedPics {
     }
 
     pub unsafe fn ChainedPics_sendEOI(&mut self, interrupt_id : u8){
-        if self.handles_interrupt(interrupt_id) {
-            if self.pics[1].handles_interrupt(interrupt_id){
+        //println!("Called once ** {:?}", interrupt_id);
+        if self.handles_interrupt(interrupt_id+0x20) {
+            if self.pics[1].handles_interrupt(interrupt_id+0x20){
                 self.pics[1].PIC_sendEOI() ;
             }
             self.pics[0].PIC_sendEOI() ;
+            Port::io_wait() ;
+            Port::io_wait() ;
         }
     }
 
-}
-
-
-
-
-
-
-
-
-
-pub fn PIC_sendEOI(irq : u8) {
-
-    if (irq >= 8){
-
-    }
 }

@@ -36,7 +36,7 @@ impl Port {
   pub fn io_wait() {
     Port::new(0x80).out8(0);
     let mut i = 0 ;
-    while (i < 100000){
+    while (i < 500000){
       i = i+1 ;
     }
   }
