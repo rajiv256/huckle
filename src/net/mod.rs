@@ -21,7 +21,7 @@ impl NetworkStack {
 
   pub fn test(&mut self) -> Result<(), EndOfFile> {
 
-    self.card.listen()  ;
+    // self.card.listen()  ;
     let address = self.card.address();
 
     let source = address;

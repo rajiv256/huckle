@@ -91,6 +91,12 @@ impl Pci {
   pub fn new() -> Pci {
     let address_port = Port::new(0xcf8);
     let data_port = Port::new(0xcfc);
+
+    address_port.in8() ;  // Enable PCI Bus Mastering to enable DMA. Need to check this.
+    Port::io_wait() ;
+    data_port.in8() ;
+    Port::io_wait() ;
+
     Pci { address_port: address_port, data_port: data_port }
   }
 
@@ -167,7 +173,7 @@ impl DriverManager for Pci {
     for bus in 0..255usize {
       for device in 0..32usize {
 
-        //println!("{:?}...{:?}", bus,device);
+        // println!("{:?}...{:?}", bus,device);
         match self.read_header(bus as u8, device as u8) {
           None => no_device_count += 1,
           Some(header) => {
@@ -193,9 +199,9 @@ impl DriverManager for Pci {
                     let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
 
                     let mut x = NetworkStack::new(box Rtl8139::new(granter)) ;
-
+                    unsafe { asm!("sti" :::: "volatile", "intel"); }
                     //x.listen() ;
-                    //x.test() ;
+                    x.test() ;
 
                   }
                 }
@@ -222,6 +228,7 @@ impl DriverManager for Pci {
 
 
     // }
+    println!("The IP was here.");
    ret
   }
 
