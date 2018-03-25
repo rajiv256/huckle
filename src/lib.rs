@@ -89,7 +89,7 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
     unsafe { ps2_controller::ps2_reset() ; }
 
 
-    
+    unsafe { asm!("sti" :::: "volatile", "intel"); }
 
     let mut pci: Pci =  Pci::new() ;
     println!("Getting drivers -- lib.rs");
@@ -97,7 +97,8 @@ pub extern "C" fn rust_main(multiboot_information_address: usize) {
 
 
 
-    //loop {}
+
+    // loop {}
 
     // We probably have to call other processes here.
 

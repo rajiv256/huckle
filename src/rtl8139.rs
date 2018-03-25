@@ -167,13 +167,13 @@ impl Driver for Rtl8139 {
 impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
-    println!("{:?}", buf.len());
+    println!("buf len {:?}", buf.len());
     self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
     self.transmit_status[self.descriptor].out32(0xfff & (buf.len() as u32));
     while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 {
 
     }
-
+    println!("Transmited!"  );
     self.descriptor = (self.descriptor + 1) % 4 ;
     Ok(buf.len())
   }
@@ -186,7 +186,7 @@ impl NetworkDriver for Rtl8139
      * has no effect. But this does not seem to be case. I keep on
      * getting interrupt unless I forcibly clears all interrupt :-(
      */
-     self.isr.out32(0xffff) ;
+
 
      //Some thing to be done for transmission interrupt.
 
@@ -218,6 +218,7 @@ impl NetworkDriver for Rtl8139
 
         }
      }
+      self.isr.out32(0x1) ;
   }
   fn address(&mut self) -> [u8; 6] {
     let mut ret = [0; 6];

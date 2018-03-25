@@ -170,7 +170,8 @@ impl DriverManager for Pci {
     let mut device_count: usize = 0;
 
     let mut io_offset: u32 = 0;
-    for bus in 0..255usize {
+    for bus in 0..32usize {
+      println!("{:?}", bus);
       for device in 0..32usize {
 
         // println!("{:?}...{:?}", bus,device);
@@ -191,7 +192,9 @@ impl DriverManager for Pci {
                 if (shared.vendor == 0x10ec) && (shared.device == 0x8139 ) {
                   io_offset = (next.base_addresses[0] >> 2) << 2 ;
                   self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4)) ;
+                  Port::io_wait() ;
                   self.data_port.out16(shared.command | 0x4) ;
+                  Port::io_wait() ;
                   if io_offset != 0 {
 
                     println!("Rtl IRQ LINE {:?}", next.interrupt_line);
@@ -199,9 +202,8 @@ impl DriverManager for Pci {
                     let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
 
                     let mut x = NetworkStack::new(box Rtl8139::new(granter)) ;
-                    unsafe { asm!("sti" :::: "volatile", "intel"); }
                     //x.listen() ;
-                    x.test() ;
+                    // x.test() ;
 
                   }
                 }
