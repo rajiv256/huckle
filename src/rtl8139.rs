@@ -105,6 +105,7 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
 
     };
     card.init() ;
+
     //card.listen();
     card
   }
@@ -121,24 +122,29 @@ impl Driver for Rtl8139 {
     self.config_1.out8(0x00);    // This should power-on the device. Basically LWAKE+LWPTN pin are set active.
     Port::io_wait() ;
 
+
     self.command_register.out8(0x10); // Software reset
     Port::io_wait() ;
 
+
+
     while (self.command_register.in8() & 0x10) != 0 { } // Wait till the RST(RESET) bit is set to 0.
-
-    self.command_register.out8(0x0C); // enable transmit and receive. --> 0x08|0x04
-    Port::io_wait() ;
-
-    while (self.command_register.in8() & 0x0c) != 0x0c {}
-
 
     //configuring RBSTART. Put the start address of recv buffer into the RBSTART port.
     self.rbstart.out32(self.rx_ring.as_ptr() as u32) ;
     Port::io_wait() ;
 
-    //Enable all possible interrupts by setting the interrupt mask.
-    self.imr.out32(INT_MASK) ;
+
+    self.command_register.out8(0x0C); // enable transmit and receive. --> 0x08|0x04 (Important)
     Port::io_wait() ;
+
+    while (self.command_register.in8() & 0x0c) != 0x0c {}
+
+
+    //Enable all possible interrupts by setting the interrupt mask.
+    self.imr.out16(0x0005) ;  // Need to set it as TxOK | RxOK = 0x0005
+    Port::io_wait() ;
+    println!(" :- 0x{:x}",self.imr.in16()) ;
 
     //This is the RCR register. Setting the values of AB(Accept Broadcast message, AM (Acc Multicast message),
     // APM (Acc packet which matches with MAC) , AAP (Acc all packets), Wrap (1<<7))
@@ -146,18 +152,20 @@ impl Driver for Rtl8139 {
     Port::io_wait() ;
 
     //init missed packet counter
-    self.mpc.out16(0x00) ;
-    Port::io_wait() ;
+    // self.mpc.out16(0x00) ;
+    // Port::io_wait() ;
 
     // No early rx-interrupts
-    self.mulint.out32(self.mulint.in32()&0xf000) ;
-    Port::io_wait() ;
+    // self.mulint.out32(self.mulint.in32()&0xf000) ;
+    // Port::io_wait() ;
 
   }
   fn listen(&mut self) {
     while ((self.command_register.in16() & RxBufEmpty) != RxBufEmpty){
       Port::io_wait() ;
     }
+    let mut isr: u32 = self.isr.in32() ;
+    println!("isr : {:0x}",isr) ;
     println!("Something happened!!");
   }
 
@@ -168,25 +176,31 @@ impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
     println!("buf len {:?}", buf.len());
-    self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
-    self.transmit_status[self.descriptor].out32(0xfff & (buf.len() as u32));
-    while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 {
 
+    self.transmit_status[self.descriptor].out32(0x1fff & (buf.len() as u32));
+    Port::io_wait() ;
+    println!("came here");
+    self.transmit_status[self.descriptor].out32(self.transmit_status[self.descriptor].in32()^(1<<13));
+    Port::io_wait() ;
+
+    self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
+    Port::io_wait() ;
+
+    println!("transmit_status 0x{:x}",self.transmit_status[self.descriptor].in32() as u32) ;
+
+    while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 {
+        println!("status : 0x{:x}",self.transmit_status[self.descriptor].in32()) ;
+        let mut tmp = 0 ;
     }
-    println!("Transmited!"  );
+    println!("Transmitted!"  );
+
     self.descriptor = (self.descriptor + 1) % 4 ;
     Ok(buf.len())
   }
-  fn interrupt_handler(&mut self) {
+  fn nic_interrupt_handler(&mut self) {
 
-     let mut isr: u32 = self.isr.in32() ;
 
-    /* clear all interrupt.
-     * Specs says reading ISR clears all interrupts and writing
-     * has no effect. But this does not seem to be case. I keep on
-     * getting interrupt unless I forcibly clears all interrupt :-(
-     */
-
+      let mut isr: u32 = self.isr.in32() ;
 
      //Some thing to be done for transmission interrupt.
 
@@ -216,9 +230,18 @@ impl NetworkDriver for Rtl8139
 
           //TODO : Handover packet to the system.
 
+
         }
      }
-      self.isr.out32(0x1) ;
+
+
+    /* clear all interrupt.
+     * Specs says reading ISR clears all interrupts and writing
+     * has no effect. But this does not seem to be case. I keep on
+     * getting interrupt unless I forcibly clears all interrupt :-(
+     */
+     self.isr.out32(0x0) ;
+
   }
   fn address(&mut self) -> [u8; 6] {
     let mut ret = [0; 6];

@@ -65,10 +65,10 @@ impl ChainedPics {
     pub unsafe fn remap(&mut self){
 
         let saved_mask1 = self.pics[0].data_port.in8() ;
-        let saved_mask2 = self.pics[1].data_port.in8() ;   // Refer Barebones Rust and OS Wiki Dev.
+        let saved_mask2 = self.pics[1].data_port.in8() ;   // Refer Barebones Rust and OS Wiki Dev
 
-        println!("mask1 := {:?}", saved_mask1);
-        println!("mask2 := {:?}", saved_mask2);
+        println!("mask1 := {:0x}", saved_mask1);
+        println!("mask2 := {:0x}", saved_mask2);
         // Tell each PIC that we are going to send a 3-byte initialization sequence
         //  on each data port.
         self.pics[0].command_port.out8(CMD_INIT) ;
@@ -95,8 +95,10 @@ impl ChainedPics {
         Port::io_wait() ;
 
         // Restore our saved masks
-        self.pics[0].data_port.out8(saved_mask1) ;
-        self.pics[1].data_port.out8(saved_mask2) ;
+        self.pics[0].data_port.out8(0x00) ;
+        Port::io_wait() ;
+        self.pics[1].data_port.out8(0x00) ;
+        Port::io_wait() ;
 
     }
 

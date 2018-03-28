@@ -9,6 +9,8 @@ const DOUBLE_FAULT_IST_INDEX: usize = 0 ;
 
 
 use spin::Once ;
+use rtl8139::Rtl8139;
+use driver::NetworkDriver;
 
 
 static TSS: Once<TaskStateSegment> = Once::new();
