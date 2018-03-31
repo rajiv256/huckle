@@ -10,7 +10,7 @@ use io::Writer ;
 
 
 pub struct NetworkStack {
-  card: Box<NetworkDriver + 'static>
+  pub card: Box<NetworkDriver + 'static>
 }
 
 impl NetworkStack {
@@ -39,6 +39,7 @@ impl NetworkStack {
 
 
     adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
+    
     self.card.listen() ;
     Ok(())
   }

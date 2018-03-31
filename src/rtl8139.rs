@@ -152,19 +152,19 @@ impl Driver for Rtl8139 {
     Port::io_wait() ;
 
     //init missed packet counter
-    // self.mpc.out16(0x00) ;
-    // Port::io_wait() ;
+    self.mpc.out16(0x00) ;
+    Port::io_wait() ;
 
     // No early rx-interrupts
-    // self.mulint.out32(self.mulint.in32()&0xf000) ;
-    // Port::io_wait() ;
+    self.mulint.out16(self.mulint.in16()&0xf000) ;
+    Port::io_wait() ;
 
   }
   fn listen(&mut self) {
     while ((self.command_register.in16() & RxBufEmpty) != RxBufEmpty){
       Port::io_wait() ;
     }
-    let mut isr: u32 = self.isr.in32() ;
+    let mut isr: u16 = self.isr.in16() ;
     println!("isr : {:0x}",isr) ;
     println!("Something happened!!");
   }
@@ -177,22 +177,28 @@ impl NetworkDriver for Rtl8139
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
     println!("buf len {:?}", buf.len());
 
-    self.transmit_status[self.descriptor].out32(0x1fff & (buf.len() as u32));
-    Port::io_wait() ;
-    println!("came here");
-    self.transmit_status[self.descriptor].out32(self.transmit_status[self.descriptor].in32()^(1<<13));
+    let mut isr: u16 = self.isr.in16() ;
+    println!("isr : {:0x}",isr) ;
+    // loop{}
+
+    self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32); // Give the address of the beginning of the packet. 
     Port::io_wait() ;
 
-    self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32);
+    self.transmit_status[self.descriptor].out32(0x1fff & (buf.len() as u32));  // Size of the packet
     Port::io_wait() ;
 
     println!("transmit_status 0x{:x}",self.transmit_status[self.descriptor].in32() as u32) ;
 
-    while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 {
-        println!("status : 0x{:x}",self.transmit_status[self.descriptor].in32()) ;
-        let mut tmp = 0 ;
-    }
+    self.transmit_status[self.descriptor].out32(self.transmit_status[self.descriptor].in32()^(1<<13));
+    Port::io_wait() ;
+
+    println!("Came out isr : 0x{:x}",self.isr.in16()) ;
+    // while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 {
+    //     println!("status : 0x{:x}",self.transmit_status[self.descriptor].in32()) ;
+    //     let mut tmp = 0 ;
+    // }
     println!("Transmitted!"  );
+
 
     self.descriptor = (self.descriptor + 1) % 4 ;
     Ok(buf.len())

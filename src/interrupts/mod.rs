@@ -9,19 +9,23 @@ const DOUBLE_FAULT_IST_INDEX: usize = 0 ;
 
 
 use spin::Once ;
-use rtl8139::Rtl8139;
-use driver::NetworkDriver;
-
 
 static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<gdt::Gdt> = Once::new() ;
 
 mod gdt ;
 
-use peripherals::mycpu::Port ;
 use pic8259::ChainedPics ;
 static mut chainedPics : ChainedPics = unsafe { ChainedPics::new(0x20,0x28) } ;
 use ps2_controller::* ;
+
+use peripherals::mycpu::Port;
+use rtl8139::Rtl8139;
+use driver::{DriverManager, NetworkDriver};
+use ::net::NetworkStack ;
+use pci::{PciManifest, PortGranter};
+
+
 
 lazy_static! {
     static ref IDT: Idt = {
@@ -121,7 +125,23 @@ extern "x86-interrupt" fn handler7(stack_frame: &mut ExceptionStackFrame){ print
 extern "x86-interrupt" fn handler8(stack_frame: &mut ExceptionStackFrame){ println!("In handler 8"); unsafe { chainedPics.ChainedPics_sendEOI(8) ; }}
 extern "x86-interrupt" fn handler9(stack_frame: &mut ExceptionStackFrame){ println!("In handler 9"); unsafe { chainedPics.ChainedPics_sendEOI(9) ; }}
 extern "x86-interrupt" fn handler10(stack_frame: &mut ExceptionStackFrame){ println!("In handler 10"); unsafe { chainedPics.ChainedPics_sendEOI(10) ; }}
-extern "x86-interrupt" fn handler11(stack_frame: &mut ExceptionStackFrame){ println!("In handler 11"); unsafe { chainedPics.ChainedPics_sendEOI(11) ; }}
+extern "x86-interrupt" fn handler11(stack_frame: &mut ExceptionStackFrame){
+    println!("In handler 11");
+
+    let isr : Port = Port::new(0xc000 + 0x3E) ;
+    println!("Inside interrupt :- 0x{:x}", isr.in16()) ;
+
+    isr.out32(0x5) ;       // Writing to ISR will clear the interrupt. Otherwise the interrupt keeps on firing.
+    Port::io_wait() ;
+
+    let mut x = 1 ;
+    while x < 1000000 {
+        x += 1 ;
+    }
+
+    unsafe { chainedPics.ChainedPics_sendEOI(11) ; }
+
+}
 extern "x86-interrupt" fn handler12(stack_frame: &mut ExceptionStackFrame){ println!("In handler 12"); unsafe { chainedPics.ChainedPics_sendEOI(12) ; }}
 extern "x86-interrupt" fn handler13(stack_frame: &mut ExceptionStackFrame){ println!("In handler 13"); unsafe { chainedPics.ChainedPics_sendEOI(13) ; }}
 extern "x86-interrupt" fn handler14(stack_frame: &mut ExceptionStackFrame){ println!("In handler 14"); unsafe { chainedPics.ChainedPics_sendEOI(14) ; }}

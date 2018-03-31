@@ -7,7 +7,7 @@ use peripherals::mycpu::Port;
 use rtl8139::Rtl8139;
 use driver::{DriverManager, NetworkDriver};
 use ::net::NetworkStack ;
-//pub static mut networkStack : NetworkStack = NetworkStack::new()
+
 
 pub struct PciManifest {
   pub register_limit: usize,
@@ -92,6 +92,11 @@ impl Pci {
     let address_port = Port::new(0xcf8);
     let data_port = Port::new(0xcfc);
 
+    address_port.in8() ;  // Enable PCI Bus Mastering to enable DMA. Need to check this.
+    Port::io_wait() ;
+    data_port.in8() ;
+    Port::io_wait() ;
+
     Pci { address_port: address_port, data_port: data_port }
   }
 
@@ -99,8 +104,8 @@ impl Pci {
 
   fn build_address(bus: u8, device: u8, function: u8, offset: u8) -> u32 {
     if (function & 0x03 != 0x00) || (device >= 0x1 << 5) || (function >= 0x1 << 3)  {
-      panic!("I am panicking in build_address")
-  } else {
+      panic!()
+    } else {
       return ((0x1 as u32) << 31) | ((bus as u32) << 16) | ((device as u32) << 11) | ((function as u32) << 8) | offset as u32;
     }
   }
@@ -110,9 +115,7 @@ impl Pci {
 
     self.address_port.out32(address);
     Port::io_wait();
-
     let input = self.data_port.in32();
-
     Ok(input)
   }
 
@@ -168,7 +171,6 @@ impl DriverManager for Pci {
 
     let mut io_offset: u32 = 0;
     for bus in 0..32usize {
-      //println!("{:?}", bus);
       for device in 0..32usize {
 
         // println!("{:?}...{:?}", bus,device);
@@ -178,6 +180,10 @@ impl DriverManager for Pci {
 
             device_count += 1;
             let shared = header.shared;
+            //println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, shared.device, shared.vendor);
+            //print!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
+            //print!("    header type 0x{:x}", shared.header_type);
+            //print!("    status 0x{:x}, command 0x{:x}", shared.status, shared.command);
 
             match header.rest {
               HeaderType::Basic(next) => {
@@ -186,28 +192,17 @@ impl DriverManager for Pci {
                   io_offset = (next.base_addresses[0] >> 2) << 2 ;
                   self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4)) ;
                   Port::io_wait() ;
-                  println!("Just checking... 0x{:x}",self.data_port.in16()) ;
-                  self.data_port.out16(shared.command | 0x4) ;  // This is supposed to be PCI bus mastering to enable DMA btw the PCI dev and Memory
+                  self.data_port.out16(shared.command | 0x4) ;
                   Port::io_wait() ;
-                  self.address_port.out32(Pci::build_address(bus as u8, device as u8, 0, 4)) ;
-                  Port::io_wait() ;
-                  println!("command after bus mastering is 0x{:x}",self.read_header(bus as u8, device as u8).unwrap().shared.command);
                   if io_offset != 0 {
-                      println!("bus #{} found device 0x{:x} -- vendor 0x{:x}", bus, device, shared.vendor);
-                      // println!("    class 0x{:x}, subclass 0x{:x}", shared.class_code, shared.subclass);
-                      // println!("    header type 0x{:x}", shared.header_type);
 
-                     // let address = Pci::build_address(bus as u8 , device as u8, 0x04 as u8, io_offset as u8);
-                     // println!("address: 0x{:x}", address) ;
-                    println!("Rtl IRQ LINE {:?}", next.interrupt_line);
+                    println!("IO_Offset:- 0x{:x}", io_offset);
                     let manifest = Rtl8139::manifest();
                     let granter = PortGranter { base: io_offset as usize, limit: manifest.register_limit as usize };
 
-
-                    let mut networkStack  = NetworkStack::new(box Rtl8139::new(granter)) ;
-
-                    networkStack.test() ;
-
+                    let mut x = NetworkStack::new(box Rtl8139::new(granter)) ;
+                    //x.listen() ;
+                    x.test() ;
 
                   }
                 }
