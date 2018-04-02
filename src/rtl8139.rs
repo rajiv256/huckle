@@ -144,7 +144,6 @@ impl Driver for Rtl8139 {
     //Enable all possible interrupts by setting the interrupt mask.
     self.imr.out16(0x0005) ;  // Need to set it as TxOK | RxOK = 0x0005
     Port::io_wait() ;
-    println!(" :- 0x{:x}",self.imr.in16()) ;
 
     //This is the RCR register. Setting the values of AB(Accept Broadcast message, AM (Acc Multicast message),
     // APM (Acc packet which matches with MAC) , AAP (Acc all packets), Wrap (1<<7))
@@ -156,8 +155,8 @@ impl Driver for Rtl8139 {
     Port::io_wait() ;
 
     // No early rx-interrupts
-    self.mulint.out16(self.mulint.in16()&0xf000) ;
-    Port::io_wait() ;
+    // self.mulint.out16(self.mulint.in16()&0xf000) ;
+    // Port::io_wait() ;
 
   }
   fn listen(&mut self) {
@@ -165,8 +164,6 @@ impl Driver for Rtl8139 {
       Port::io_wait() ;
     }
     let mut isr: u16 = self.isr.in16() ;
-    println!("isr : {:0x}",isr) ;
-    println!("Something happened!!");
   }
 
 
@@ -175,33 +172,72 @@ impl Driver for Rtl8139 {
 impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
-    println!("buf len {:?}", buf.len());
 
-    let mut isr: u16 = self.isr.in16() ;
-    println!("isr : {:0x}",isr) ;
-    // loop{}
+    // self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32); // Give the address of the beginning of the packet.
+    // Port::io_wait() ;
 
-    self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32); // Give the address of the beginning of the packet. 
+    // while(self.transmit_status[self.descriptor].in32() & (1<<15) != 0x0) {}
+    println!("{:?}*******transmit_status before 0x{:x}",self.descriptor as u32, self.transmit_status[self.descriptor].in32() as u32) ;
+
+
+    self.transmit_status[self.descriptor].out32(0x40000 | (buf.len() as u32));  // Size of the packet
     Port::io_wait() ;
 
-    self.transmit_status[self.descriptor].out32(0x1fff & (buf.len() as u32));  // Size of the packet
-    Port::io_wait() ;
 
+    // while (self.transmit_status[self.descriptor].in32() != 0xa02e){}
     println!("transmit_status 0x{:x}",self.transmit_status[self.descriptor].in32() as u32) ;
 
     self.transmit_status[self.descriptor].out32(self.transmit_status[self.descriptor].in32()^(1<<13));
     Port::io_wait() ;
-
-    println!("Came out isr : 0x{:x}",self.isr.in16()) ;
-    // while (self.transmit_status[self.descriptor].in32() & 0x8000) == 0 {
-    //     println!("status : 0x{:x}",self.transmit_status[self.descriptor].in32()) ;
+    println!("transmit_status after 0x{:x}",self.transmit_status[self.descriptor].in32() as u32 & 0x2e) ;
+    // println!("Came out isr : 0x{:x}",self.isr.in16()) ;
+    // while (self.transmit_status[self.descriptor].in32() & (1<<13)) == 1 {
+    //     //println!("status : 0x{:x}",self.transmit_status[self.descriptor].in32()) ;
     //     let mut tmp = 0 ;
     // }
     println!("Transmitted!"  );
 
 
     self.descriptor = (self.descriptor + 1) % 4 ;
+    if self.descriptor == 0 {
+        self.reset_init() ;
+    }
     Ok(buf.len())
+  }
+  fn reset_init(&mut self){
+      self.command_register.out8(0x10); // Software reset
+      Port::io_wait() ;
+
+      while (self.command_register.in8() & 0x10) != 0 { } // Wait till the RST(RESET) bit is set to 0.
+
+      //configuring RBSTART. Put the start address of recv buffer into the RBSTART port.
+      self.rbstart.out32(self.rx_ring.as_ptr() as u32) ;
+      Port::io_wait() ;
+
+
+      self.command_register.out8(0x0C); // enable transmit and receive. --> 0x08|0x04 (Important)
+      Port::io_wait() ;
+
+      while (self.command_register.in8() & 0x0c) != 0x0c {}
+
+
+      //Enable all possible interrupts by setting the interrupt mask.
+      self.imr.out16(0x0005) ;  // Need to set it as TxOK | RxOK = 0x0005
+      Port::io_wait() ;
+
+      //This is the RCR register. Setting the values of AB(Accept Broadcast message, AM (Acc Multicast message),
+      // APM (Acc packet which matches with MAC) , AAP (Acc all packets), Wrap (1<<7))
+      self.config_rx.out16(((1 << 12) | (1 << 8) | (1 << 7) | (1 << 3) | (1 << 2) | (1 << 1))) ;
+      Port::io_wait() ;
+
+      //init missed packet counter
+      self.mpc.out16(0x00) ;
+      Port::io_wait() ;
+
+      // No early rx-interrupts
+      self.mulint.out16(self.mulint.in16()&0xf000) ;
+      Port::io_wait() ;
+
   }
   fn nic_interrupt_handler(&mut self) {
 

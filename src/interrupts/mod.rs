@@ -129,15 +129,12 @@ extern "x86-interrupt" fn handler11(stack_frame: &mut ExceptionStackFrame){
     println!("In handler 11");
 
     let isr : Port = Port::new(0xc000 + 0x3E) ;
+
     println!("Inside interrupt :- 0x{:x}", isr.in16()) ;
 
-    isr.out32(0x5) ;       // Writing to ISR will clear the interrupt. Otherwise the interrupt keeps on firing.
+    isr.out16(0x5) ;       // Writing to ISR will clear the interrupt. Otherwise the interrupt keeps on firing.
     Port::io_wait() ;
-
-    let mut x = 1 ;
-    while x < 1000000 {
-        x += 1 ;
-    }
+    while (isr.in16() != 0x0) {}
 
     unsafe { chainedPics.ChainedPics_sendEOI(11) ; }
 

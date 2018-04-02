@@ -36,10 +36,14 @@ impl NetworkStack {
     let header = EthernetHeader::new(source, destination, 0x0800);
 
     let to_send = &(header, i_header, u_header, raw);
+    let mut count = 0 ;
+    loop {
+        adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
+        count += 1 ;
+        println!("COUNT :- {:x}", count) ;
+        let mut x = 1 ; while x <100000000 {x += 1 ; }
+    }
 
-
-    adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
-    
     self.card.listen() ;
     Ok(())
   }
