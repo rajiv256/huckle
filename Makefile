@@ -20,7 +20,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -netdev socket,id=u0,connect=:8010 -device rtl8139,netdev=u0 -net dump,file=/tmp/vm0.pcap -cdrom $(iso) -m 1024M
+	@qemu-system-x86_64 -net nic,model=rtl8139,vlan=2 -net socket,vlan=2,connect=:8010  -cdrom $(iso) -m 1024M
 
 iso: $(iso)
 

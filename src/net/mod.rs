@@ -31,17 +31,20 @@ impl NetworkStack {
     let u_header = UdpHeader::new(10, 10, raw.len() as u16);
     //192.168.100.2 & 192.168.100.1 ==>  40151232,23374016
     //192+168*256+100*256*256 + 2*256*256*256
-    let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 251789322,4278321162);
+    let i_header = IpHeader::new((raw.len() + size_of::<UdpHeader>()) as u16, 0x11, 251789322,67217600);
 
     let header = EthernetHeader::new(source, destination, 0x0800);
 
     let to_send = &(header, i_header, u_header, raw);
     let mut count = 0 ;
+    // adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
+
     loop {
         adap_ref(&mut*self.card).write(unsafe { transmute ((to_send, size_of::<(EthernetHeader, IpHeader, UdpHeader)>() + raw.len())) }).ok();
         count += 1 ;
         println!("COUNT :- {:x}", count) ;
         let mut x = 1 ; while x <100000000 {x += 1 ; }
+        //println!("The CAPR is at :- 0x{:x}",&mut*self.card.capr.in16()) ;
     }
 
     self.card.listen() ;
