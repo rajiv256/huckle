@@ -23,9 +23,10 @@ impl NetworkStack {
 
     // self.card.listen()  ;
     let address = self.card.address();
+    println!("mac :- {:?}",address );
 
     let source = address;
-    let destination = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
+    let destination = [0x52,0x54,0x00,0x12,0x34,0x58];
 
     let raw = [b'u', b'd', b'p', b'!'];
     let u_header = UdpHeader::new(10, 10, raw.len() as u16);
@@ -44,7 +45,6 @@ impl NetworkStack {
         count += 1 ;
         println!("COUNT :- {:x}", count) ;
         let mut x = 1 ; while x <100000000 {x += 1 ; }
-        //println!("The CAPR is at :- 0x{:x}",&mut*self.card.capr.in16()) ;
     }
 
     self.card.listen() ;
@@ -128,6 +128,8 @@ impl EthernetHeader {
   fn new(source: [u8; 6], destination: [u8; 6], typ: u16) -> EthernetHeader {
     //let r = 0b10101010;
     //let n = 0b10101011;
+    println!("src : {:?}",source) ;
+    println!("dest : {:?}",destination) ;
     EthernetHeader {
       //preamble: [r, r, r, r, r, r, r, n],
       destination: destination,

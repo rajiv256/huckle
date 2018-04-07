@@ -106,7 +106,7 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
       imr: p(IMR),
       mpc: p(MPC),
       isr: p(ISR),
-      ersr:p(0x0034),
+      ersr:p(0x0036),
       capr: p(CAPR),
       cbr : p(CBR)
 
@@ -156,7 +156,7 @@ impl Driver for Rtl8139 {
     // APM (Acc packet which matches with MAC) , AAP (Acc all packets), Wrap (1<<7))
     // self.config_rx.out32((1 << 12) | (1 << 8) | (1 << 7) | (1 << 3) | (1 << 2) | (1 << 0)|(1<<1)| 0x4000 ) ;
     // Refer to the Datasheet
-    self.config_rx.out32(0x0002f6bf) ;
+    self.config_rx.out32(0x0002b6b1) ;
     Port::io_wait() ;
 
 
@@ -199,18 +199,14 @@ impl NetworkDriver for Rtl8139
     self.transmit_status[self.descriptor].out32(self.transmit_status[self.descriptor].in32()^(1<<13));
     Port::io_wait() ;
     println!("transmit_status after 0x{:x}",self.transmit_status[self.descriptor].in32() as u32 & 0x2e) ;
-    // println!("Came out isr : 0x{:x}",self.isr.in16()) ;
-    // while (self.transmit_status[self.descriptor].in32() & (1<<13)) == 1 {
-    //     //println!("status : 0x{:x}",self.transmit_status[self.descriptor].in32()) ;
-    //     let mut tmp = 0 ;
-    // }
+
     println!("Transmitted!"  );
 
 
     self.descriptor = (self.descriptor + 1) % 4 ;
-    // if self.descriptor == 0 {
-    //     self.reset_init() ;
-    // }
+    if self.descriptor == 0 {
+        self.reset_init() ;
+    }
     Ok(buf.len())
   }
   fn reset_init(&mut self){
@@ -237,14 +233,14 @@ impl NetworkDriver for Rtl8139
       //This is the RCR register. Setting the values of AB(Accept Broadcast message, AM (Acc Multicast message),
       // APM (Acc packet which matches with MAC) , AAP (Acc all packets), Wrap (1<<7))
       // self.config_rx.out32((1 << 12) | (1 << 8) | (1 << 7) | (1 << 3) | (1 << 2) | (1 << 0)|(1<<1)| 0x4000 ) ;
-      self.config_rx.out32(0x0002f6bf) ;
+      self.config_rx.out32(0x0002b6b1) ;
       Port::io_wait() ;
 
       //init missed packet counter
       self.mpc.out16(0x00) ;
       Port::io_wait() ;
 
-      // // No early rx-interrupts
+      // No early rx-interrupts
       // self.mulint.out16(self.mulint.in16()&0xf000) ;
       // Port::io_wait() ;
 
@@ -292,15 +288,15 @@ impl NetworkDriver for Rtl8139
      * has no effect. But this does not seem to be case. I keep on
      * getting interrupt unless I forcibly clears all interrupt :-(
      */
-     self.isr.out32(0x0) ;
+     self.isr.out16(0xffff) ;
 
   }
   fn address(&mut self) -> [u8; 6] {
     let mut ret = [0; 6];
     for i in 0..6usize {
-      ret[i] = self.id[i].in8();
+      ret[i] = self.id[i].in8() as u8;
     }
-    // println!("{:?}", ret);
+     println!("{:?}", ret);
     ret
   }
 }
