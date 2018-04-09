@@ -1,3 +1,5 @@
+#![feature(inclusive_range_syntax)]
+
 use peripherals::mycpu::Port;
 use driver::{Driver, NetworkDriver};
 use pci::{PciManifest, PortGranter};
@@ -182,6 +184,7 @@ impl NetworkDriver for Rtl8139
 {
   fn put_frame(&mut self, buf: &[u8]) -> Result<usize, u32> {
 
+    println!("buf len :- 0x{:x}",buf.len()) ;
     self.transmit_address[self.descriptor].out32(buf.as_ptr() as u32); // Give the address of the beginning of the packet.
     Port::io_wait() ;
 
