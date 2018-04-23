@@ -26,7 +26,7 @@ impl NetworkStack {
     println!("mac :- {:?}",address );
 
     let source = address;
-    let destination = [0x52,0x54,0x00,0x12,0x34,0x58];
+    let destination = [0x52,0x54,0x00,0x12,0x34,0x57];
 
     let raw = [b'u', b'd', b'p', b'!'];
     let u_header = UdpHeader::new(10, 10, raw.len() as u16);
@@ -45,6 +45,7 @@ impl NetworkStack {
         count += 1 ;
         println!("COUNT :- {:x}", count) ;
         let mut x = 1 ; while x <100000000 {x += 1 ; }
+        break ;
     }
 
     self.card.listen() ;
