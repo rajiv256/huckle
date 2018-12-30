@@ -1,1 +1,1 @@
-The Unikernel I used for this project has been built in its entirety excluding the Interrupt Handling by following this well written blog  (https://os.phil-opp.com/)[Writing an OS in Rust], by Phillip Oppermann.
+The Unikernel I used for this project has been built in its entirety excluding the Interrupt Handling by following this well written blog  [Writing an OS in Rust](https://os.phil-opp.com/), by Phillip Oppermann.
