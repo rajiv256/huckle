@@ -10,11 +10,11 @@ Will add instructions as to how to download and run this server on a virtual-box
 
 Long live Open Source!
 
-#### Installing Requirements
+### Installing Requirements
 
 Install qemu, xorriso and nasm. 
 
-#### Setting up the environment 
+### Setting up the environment 
 
 Install Rust using the following command :
 
@@ -37,16 +37,19 @@ Now go to the project root directory. Inside it, override the versions in this d
 
 I installed the same thing again by creating a new clone from github. I built the code and it worked under this version.
 Here are the final versions that you might get.
-'''
+```javascript
 rajiv@rajiv-Inspiron-3537:/huckle$ rustc --version`
+
 rustc 1.18.0-nightly (2564711e8 2017-04-04)
 
 rajiv@rajiv-Inspiron-3537:/huckle$ cargo --version`
+
 cargo 0.19.0-nightly (4e95c6b41 2017-03-23)
-''' 
+```
+
 This sets your system up and you are good to go!!
 
-#### How to run?
+### How to run?
   - `make iso`
 
   - `make run`
