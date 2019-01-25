@@ -115,7 +115,7 @@ impl Rtl8139 { // TODO(ryan): is there already a frame oriented interface in std
     };
     card.init() ;
 
-    //card.listen();
+    //card.listen();   // This listen() function is enabled in the huckle-listen repo as it is the server and this repo is the client. 
     card
   }
 
