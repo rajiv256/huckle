@@ -33,7 +33,7 @@ Assuming you already have Rust installed.
 
 Now go to the project root directory. Inside it, override the versions in this directory to the above nightly versions. Use the below command.
 
-​​rustup override add nightly-2017-04-05​
+`rustup override add nightly-2017-04-05`
 
 I installed the same thing again by creating a new clone from github. I built the code and it worked under this version.
 Here are the final versions that you might get.
