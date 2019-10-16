@@ -1,6 +1,6 @@
 ### What is this project? 
 
-A fully functional unikernel web server written completely in Rust. ([Why Rust?](https://doc.rust-lang.org/book/foreword.html) 
+A fully functional unikernel web server written completely in Rust. ([Why Rust?](https://doc.rust-lang.org/book/foreword.html)) 
 
 This has no underlying OS library dependencies and is therefore readily deployable on Bare-metal. 
 
