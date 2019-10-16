@@ -7,9 +7,9 @@ This has no underlying OS library dependencies and is therefore readily deployab
 ### Components
 
 1. A minimal kernel by following this excellent series of  [blog posts](https://os.phil-opp.com/) by Phill Oppermann
-  - Basic Grub, bootloader, Long mode, Stack​
-  - GDT, TSS
-  - Paging for memory management with 4 GB of physical memory is mapped
+    - Basic Grub, bootloader, Long mode, Stack​
+    - GDT, TSS
+    - Paging for memory management with 4 GB of physical memory is mapped
   
 2. VGA Display screen 
 3. PCI to detect ethernet card and other peripheral devices. 
