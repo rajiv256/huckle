@@ -6,7 +6,7 @@ This has no underlying OS library dependencies and is therefore readily deployab
 
 ### Somewhat detailed Documentation
 
-[https://rajiv256.github.io/projects/ouros/](Blog post)
+[Blog post](https://rajiv256.github.io/projects/ouros/)
 
 ### Components
 
