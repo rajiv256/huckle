@@ -4,6 +4,10 @@ A fully functional unikernel web server written completely in Rust. ([Why Rust?]
 
 This has no underlying OS library dependencies and is therefore readily deployable on Bare-metal. 
 
+### Somewhat detailed Documentation
+
+[https://rajiv256.github.io/projects/ouros/](Blog post)
+
 ### Components
 
 1. A minimal kernel by following this excellent series of  [blog posts](https://os.phil-opp.com/) by Phill Oppermann
